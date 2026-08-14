@@ -23,9 +23,18 @@ This workflow automates the entire intake pipeline in real-time:
 ---
 
 ## 🏗️ Architecture & Data Flow
+
+
+
+
+
 Webhook Trigger ] ───► [ Airtable: Search Lead ] ────┬─► (Lead istnieje?) TRUE ───► [ Airtable Update ]
                                                      │
-                                                   └─► (Nowy Lead?) FALSE ───► [ OpenAI...JSON... ] ───► [ Airtable Create Record ]
+                                                     └─► (Nowy Lead?) FALSE ───► [ OpenAI...JSON... ] ───► [ Airtable Create Record ]
+
+
+                                            
+
 
 ## 🛠️ Tech Stack
 
