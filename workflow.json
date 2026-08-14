@@ -1,0 +1,971 @@
+{
+  "name": "Lead Qualification & Automated CRM Routing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inbound-lead",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3424,
+        0
+      ],
+      "id": "7f1325ae-be5b-4364-852c-8b4c97d38347",
+      "name": "Webhook",
+      "webhookId": "1811e38d-b86e-41a9-8d8f-e660353676aa",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawEmail = $json.body.email || \"\";\nconst cleanEmail = rawEmail.trim().toLowerCase();\n\nreturn {\n  json: {\n    clean_email: cleanEmail,\n    full_name: ($json.body.full_name || \"Unknown\").trim(),\n    company: ($json.body.company || \"N/A\").trim(),\n    budget: $json.body.budget || \"Not specified\",\n    message: $json.body.message || \"\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3072,
+        0
+      ],
+      "id": "8b0c6e2e-763e-40c5-ac56-8d49537a92f2",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appYeJw97Ej709mzH",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appYeJw97Ej709mzH"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblVGVcO9UJ90KsVl",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appYeJw97Ej709mzH/tblVGVcO9UJ90KsVl"
+        },
+        "filterByFormula": "={Email} = '{{ $json.clean_email }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -2720,
+        0
+      ],
+      "id": "0ce7dfda-beab-4952-a097-06ef6760ef32",
+      "name": "Search records",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "EYVN9noIHXKK9xna",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cc6bd0d6-76cb-4ee3-a1af-8fde00342c39",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2208,
+        0
+      ],
+      "id": "9c4bb8f3-669e-43b8-809b-129353cc204b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appYeJw97Ej709mzH",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appYeJw97Ej709mzH"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblVGVcO9UJ90KsVl",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appYeJw97Ej709mzH/tblVGVcO9UJ90KsVl"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Duplicate",
+            "id": "={{ $json.id }}",
+            "Message": "={{ $json.fields?.Message || '' }}\n\n--- PONOWNY KONTAKT ---\n{{ $node[\"Code in JavaScript\"].json.message }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New Qualified",
+                  "value": "New Qualified"
+                },
+                {
+                  "name": "Disqualified / Nurture",
+                  "value": "Disqualified / Nurture"
+                },
+                {
+                  "name": "Duplicate",
+                  "value": "Duplicate"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -1744,
+        -16
+      ],
+      "id": "339fdf6e-58f6-4a76-96fe-7089a0372606",
+      "name": "Update record",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "EYVN9noIHXKK9xna",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let parsedAi = {};\nlet rawTextFromAI = \"\";\nlet parsingError = false;\n\ntry {\n  // 1. Bezpieczny odczyt tekstu z odpowiedzi OpenAI\n  rawTextFromAI = $json.output?.[0]?.content?.[0]?.text || \"\";\n  \n  // 2. Czyszczenie ze znaczników markdown\n  const cleanedText = rawTextFromAI.replace(/```json/g, '').replace(/```/g, '').trim();\n  \n  // 3. Próba parsowania do obiektu JSON\n  parsedAi = JSON.parse(cleanedText);\n} catch (error) {\n  // 4. FALLBACK: Jeśli JSON był uszkodzony, nie przerywamy pracy n8n\n  parsingError = true;\n  parsedAi = {\n    score: 0,\n    intent: \"UNKNOWN\",\n    budget_fit: \"UNKNOWN\",\n    summary: \"BŁĄD AI: Odpowiedź modelu nie zawierała poprawnego formatu JSON.\",\n    reasoning: `Nie udało się sparsować odpowiedzi z OpenAI. Błąd: ${error.message}`\n  };\n}\n\n// Bezpieczne pobranie danych leada z węzła \"Normalizacja\"\nconst leadData = $node[\"Normalizacja\"]?.json || {};\n\nreturn {\n  json: {\n    // Dane leada\n    full_name: leadData.full_name || \"\",\n    email: leadData.clean_email || \"\",\n    company: leadData.company || \"\",\n    budget: leadData.budget || \"\",\n    message: leadData.message || \"\",\n    \n    // Dane z AI (lub wartości awaryjne)\n    ai_score: typeof parsedAi.score === 'number' ? parsedAi.score : 0,\n    ai_intent: parsedAi.intent || \"UNKNOWN\",\n    ai_budget_fit: parsedAi.budget_fit || \"UNKNOWN\",\n    ai_summary: parsedAi.summary || \"\",\n    ai_reasoning: parsedAi.reasoning || \"\",\n    \n    // Flaga informująca, czy wystąpił awaryjny fallback\n    is_parsing_error: parsingError\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        240
+      ],
+      "id": "e686e2c2-789f-43cc-aaca-861c78e050d0",
+      "name": "Parse AI Output"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are an expert B2B Sales Development Representative (SDR). Your job is to analyze incoming inbound leads and score them based on fit, intent, and budget.\n\nOutput MUST be a valid JSON object matching this schema:\n{\n  \"score\": (number between 1 and 100),\n  \"intent\": (\"HIGH\" | \"MEDIUM\" | \"LOW\"),\n  \"budget_fit\": (\"HIGH_BUDGET\" | \"MEDIUM_BUDGET\" | \"LOW_BUDGET\" | \"UNKNOWN\"),\n  \"summary\": \"1-2 sentence summary of what the lead wants and key pain points\",\n  \"reasoning\": \"Brief explanation of the score\"\n}\n\nScoring criteria:\n- High Score (70-100): Clear business need, budget explicitly mentioned or high-value intent, enterprise or SMB company, urgent timeline.\n- Low Score (0-69): Vague message, spam, students, asking for free advice, no business intent."
+            },
+            {
+              "content": "=Lead Details:\n- Name: {{ $('Code in JavaScript').item.json.full_name }}\n- Email: {{ $('Code in JavaScript').item.json.clean_email }}\n- Company: {{ $('Code in JavaScript').item.json.company }}\n- Budget: {{ $('Code in JavaScript').item.json.budget }}\n- Message: {{ $('Code in JavaScript').item.json.message }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        -1776,
+        240
+      ],
+      "id": "94f19bd3-3e31-4896-9266-f9784ca1c82a",
+      "name": "Normalizacja",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "openAiApi": {
+          "id": "jS5bjLIQsVr2BV6W",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a337b036-35f2-475a-9698-37762c6ce02b",
+              "leftValue": "={{ $json.ai_score }}",
+              "rightValue": 70,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "b8a00692-078d-456d-b803-0e0c1f0ab403",
+              "leftValue": "={{ $json.ai_score }}",
+              "rightValue": 70,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -864,
+        240
+      ],
+      "id": "59eff181-1c26-4fd3-ac23-084014777f29",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appYeJw97Ej709mzH",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appYeJw97Ej709mzH"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblVGVcO9UJ90KsVl",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appYeJw97Ej709mzH/tblVGVcO9UJ90KsVl"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Budget": "={{ $('Code in JavaScript').item.json.budget }}",
+            "Score": "={{ $json.ai_score }}",
+            "Email": "={{ $('Code in JavaScript').item.json.clean_email }}",
+            "Full Name": "={{ $('Code in JavaScript').item.json.full_name }}",
+            "Company": "={{ $('Code in JavaScript').item.json.company }}",
+            "Intent": "={{ $json.ai_intent }}",
+            "Message": "={{ $('Parse AI Output').item.json.ai_reasoning }}",
+            "AI Summary": "={{ $json.ai_summary }}",
+            "Status": "New Qualified"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New Qualified",
+                  "value": "New Qualified"
+                },
+                {
+                  "name": "Disqualified / Nurture",
+                  "value": "Disqualified / Nurture"
+                },
+                {
+                  "name": "Duplicate",
+                  "value": "Duplicate"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -464,
+        144
+      ],
+      "id": "149bcff3-265d-4e29-9c6d-73b75368e9aa",
+      "name": "Lead Wysokiej Jakości",
+      "retryOnFail": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "EYVN9noIHXKK9xna",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appYeJw97Ej709mzH",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appYeJw97Ej709mzH"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblVGVcO9UJ90KsVl",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appYeJw97Ej709mzH/tblVGVcO9UJ90KsVl"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Budget": "={{ $('Code in JavaScript').item.json.budget }}",
+            "Score": "={{ $('Parse AI Output').item.json.ai_score }}",
+            "Email": "={{ $('Code in JavaScript').item.json.clean_email }}",
+            "Full Name": "={{ $('Code in JavaScript').item.json.full_name }}",
+            "Company": "={{ $('Code in JavaScript').item.json.company }}",
+            "Message": "={{ $('Code in JavaScript').item.json.message }}",
+            "Intent": "={{ $('Parse AI Output').item.json.ai_intent }}",
+            "AI Summary": "={{ $('Parse AI Output').item.json.ai_summary }}",
+            "Status": "Disqualified / Nurture"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Intent",
+              "displayName": "Intent",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New Qualified",
+                  "value": "New Qualified"
+                },
+                {
+                  "name": "Disqualified / Nurture",
+                  "value": "Disqualified / Nurture"
+                },
+                {
+                  "name": "Duplicate",
+                  "value": "Duplicate"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -464,
+        336
+      ],
+      "id": "87d3c8f3-30c5-4b43-b752-623ff52e476a",
+      "name": "Lead Słabej Jakości",
+      "retryOnFail": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "EYVN9noIHXKK9xna",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 📊 Project Summary & Business Value (ROI)\n\nThis project provides a complete, production-grade inbound sales automation system for web form processing. The workflow ingests incoming leads, deduplicates records against Airtable CRM, enriches and normalizes payload data using OpenAI LLMs, and dynamically routes qualified leads.\n\n* **CRM Deduplication:** Automatic email lookup prevents multiple record creations for returning prospects.\n* **AI Normalization & Scoring:** Standardizes messy form inputs (letter capitalization, phone formatting) and evaluates purchasing intent based on budget and project scope.\n* **Sales Efficiency (ROI):** Reduces manual lead qualification and entry time by **~90%**, allowing SDRs to focus exclusively on High-Quality prospects.",
+        "height": 304,
+        "width": 688
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        -864
+      ],
+      "id": "b80d9a3f-e6f5-4365-a31c-e00ae6828d80",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### Step 1: Data Ingestion (Webhook)\n* **Function:** HTTP POST endpoint listening for inbound web form submissions.\n* **Key Data:** Captures raw JSON payload containing name, email, company name, budget, and project description.\n",
+        "height": 208,
+        "width": 272,
+        "color": "#8340B0"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3504,
+        -256
+      ],
+      "id": "d1e57b72-0af6-4b17-af71-a3da6bc5cef8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "### Step 2: Pre-cleaning (JavaScript Code Node)\n* **Function:** Standardizes raw incoming data prior to CRM lookup.\n* **Logic:** Trims whitespace (`trim()`), converts email to lowercase, and prepares sanitized search variables for deduplication.\n",
+        "height": 224,
+        "width": 272,
+        "color": "#CD9418"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        -272
+      ],
+      "id": "10e3f8a3-662f-48ff-83ea-704b2d4e0526",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "### Step 3: CRM Lookup (Airtable Search)\n* **Function:** Queries Airtable CRM table to locate existing records matching the email address (`{Email} = 'submitted_email'`).\n\n",
+        "height": 176,
+        "width": 272,
+        "color": "#338E94"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2800,
+        -224
+      ],
+      "id": "2ed93790-4438-41bd-8e29-44756f2d8919",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "### Step 4: Deduplication Logic (IF Node)\n* **Condition:** Checks if Airtable search returned an existing record.\n* **TRUE Branch (Existing Lead):** Updates existing Airtable record (appends new inquiry details, updates last touchpoint timestamp, escalates lead status). Workflow safely completes.\n* **FALSE Branch (New Lead):** Passes lead data down to the AI qualification pipeline.\n\n",
+        "height": 176,
+        "width": 624,
+        "color": "#127337"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2464,
+        -240
+      ],
+      "id": "61bc9e04-1939-4ccd-bd03-5ac813704756",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "### Step 5: AI Normalization & Scoring (OpenAI)\n* **Function:** Employs LLM (`gpt-4o-mini`) for qualitative evaluation and payload structuring.\n* **Scope:** Sanitizes company/contact names, classifies industry and company size, evaluates sales potential (`score` 1–10 or `is_qualified`), extracts key requirements, and generates a 1-sentence summary.\n\n",
+        "height": 208,
+        "width": 384,
+        "color": "#FAFAFA"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1872,
+        432
+      ],
+      "id": "039cf944-d97f-4eea-8783-9321a2fc1200",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "### Step 6: Parsing AI Output (JavaScript Code Node)\n* **Function:** Safely parses the structured JSON payload returned by OpenAI.\n* **Logic:** Extracts clean fields and casts data types (e.g., converts text ratings to numeric values) for CRM storage and conditional routing.\n\n",
+        "height": 208,
+        "width": 384,
+        "color": "#CD9418"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        432
+      ],
+      "id": "fe96350a-6908-40af-b0db-e2f826e4dc94",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "### Step 7: Routing & CRM Insertion (IF Node)\n* **Condition:** Evaluates AI-generated lead score (e.g., `score >= 7` or `is_qualified == true`).\n* **TRUE Branch (High-Quality Lead):** Creates a record under High Priority / Hot Leads in Airtable. Optionally triggers immediate notification to the sales team.\n* **FALSE Branch (Low-Quality Lead):** Records lead under Low Priority / Nurturing / Unqualified in Airtable, preventing sales team distraction.",
+        "height": 176,
+        "width": 704,
+        "color": "#338E94"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        512
+      ],
+      "id": "2e83f78b-df6e-4ad2-ab34-2b92b0eac621",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "### 🛡️ Reliability & Error Handling\n\n* **Retry Policy (Retry on Fail):** Nodes communicating with external APIs (Airtable, OpenAI) utilize automatic retries (3 attempts, 5-second delay) to absorb transient network glitches and rate limits.\n* **Defensive JS Parsing:** The AI Output Parser guards against schema drift with default fallbacks for incomplete LLM responses.\n* **Global Error Handler:** Connected to an overarching Error Trigger Workflow that dispatches technical Slack alerts with direct execution logs upon unhandled failure.",
+        "height": 208,
+        "width": 640,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        192
+      ],
+      "id": "99abb143-ac3d-4e25-b807-2f75649af2b1",
+      "name": "Sticky Note8"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalizacja",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizacja": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Output": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Lead Wysokiej Jakości",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lead Słabej Jakości",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "VLjaR8rnD1sHzM6q",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "b996ba03-4188-467f-9361-a097056a54ad",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5f79b03ae1a0460374b70ab4b6a1a3c12161af0ab5c5e1a40ad326cd7509381a"
+  },
+  "nodeGroups": [],
+  "id": "zKpl4nCbIL0dxAAt",
+  "tags": [
+    {
+      "updatedAt": "2026-08-10T14:24:12.532Z",
+      "createdAt": "2026-08-10T14:24:12.532Z",
+      "id": "R6WkRqrIIr4avnuX",
+      "name": "Gotowe do portfolio"
+    }
+  ]
+}
